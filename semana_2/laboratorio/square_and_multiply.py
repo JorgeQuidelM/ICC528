@@ -1,4 +1,4 @@
-from cambio_base import cambio_base_euclides
+from semana_2.laboratorio.cambio_base import cambio_base_euclides
 
 
 def fast_modular_exp(base, exp, mod):

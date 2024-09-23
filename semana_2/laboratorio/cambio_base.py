@@ -25,12 +25,15 @@ def cambio_a_base10(n, base):
     return n_base10
 
 
+def convertir_digito(i):
+    return str(i) if i < 10 else chr(i + 55)
+
+
 def cambio_base_euclides(n, base):
     ans = ''
-    handle_digit = lambda i: str(i) if i < 10 else chr(i + 55)
     while n > 0:
         r = n % base
-        ans += handle_digit(r)
+        ans += convertir_digito(r)
         n //= base
     return ans[::-1]
 
