@@ -1,27 +1,61 @@
-from semana_2.laboratorio.totiente_euler import es_primo
 from semana_1.laboratorio.aritmetica_modular import inverso_modular, mcd_euclides
 from semana_2.laboratorio.teorema_chino_resto import crt
+from semana_2.laboratorio.square_and_multiply import fast_modular_exp
 
 import random
 
 
-def generar_primo(min, max):
-    num_primo = random.randint(min, max)
-    while not es_primo(num_primo):
-        num_primo = random.randint(min, max)
-    return num_primo
+def miller_rabin(n, k=40):
+    if n <= 1:
+        return False
+
+    if n <= 3:
+        return True
+
+    if n % 2 == 0:
+        return False
+
+    s, d = 0, n - 1
+    while d % 2 == 0:
+        s += 1
+        d //= 2
+
+    for _ in range(k):
+        a = random.randint(2, n - 2)
+        x = fast_modular_exp(a, d, n)
+
+        if x == 1 or x == n - 1:
+            continue
+
+        for _ in range(s - 1):
+            x = fast_modular_exp(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
 
 
-def generar_claves_rsa(primo_p, primo_q):
-    totiente = (primo_p - 1) * (primo_q - 1)
+def generar_primo(bits):
+    while True:
+        p = random.getrandbits(bits)
+        if p % 2 == 0:
+            continue
+        if miller_rabin(p):
+            return p
 
-    clave_publica_e = generar_primo(2, totiente)
-    while mcd_euclides(clave_publica_e, totiente) != 1:
-        clave_publica_e = generar_primo(2, totiente)
 
-    clave_privada_d = inverso_modular(clave_publica_e, totiente)
+def generar_claves_rsa(p, q):
+    totiente = (p - 1) * (q - 1)
 
-    return clave_publica_e, clave_privada_d
+    e = generar_primo(16)
+
+    while e >= totiente or mcd_euclides(e, totiente) != 1:
+        e = generar_primo(16)
+
+    d = inverso_modular(e, totiente)
+
+    return e, d
 
 
 def convertir_mensaje_a_numeros(mensaje):
@@ -38,41 +72,42 @@ def convertir_numeros_a_mensaje(numeros):
     return cadena
 
 
-def cifrar_mensaje(mensaje, clave_publica_e, modulo_n):
-    mensaje_numerico = convertir_mensaje_a_numeros(mensaje)
+def cifrar_mensaje(m, e, n):
+    numeros = convertir_mensaje_a_numeros(m)
     numeros_cifrados = []
-    for numero in mensaje_numerico:
-        numero_cifrado = (numero ** clave_publica_e) % modulo_n
-        numeros_cifrados.append(numero_cifrado)
+    for num in numeros:
+        num_cifrado = fast_modular_exp(num, e, n)
+        numeros_cifrados.append(num_cifrado)
     return numeros_cifrados
 
 
-def descifrar_mensaje(mensaje_cifrado, clave_privada_d, modulo_n):
-    numeros_descifrados = []
-    for numero in mensaje_cifrado:
-        numero_descifrado = (numero ** clave_privada_d) % modulo_n
-        numeros_descifrados.append(numero_descifrado)
-    return convertir_numeros_a_mensaje(numeros_descifrados)
+def descifrar_mensaje(c_numeros, d, n):
+    numeros_desc = []
+    for num in c_numeros:
+        num_desc = fast_modular_exp(num, d, n)
+        numeros_desc.append(num_desc)
+    return numeros_desc
 
 
-def descifrar_crt(mensaje_cifrado, clave_privada_d, primo_p, primo_q):
-    dp = clave_privada_d % (primo_p - 1)
-    dq = clave_privada_d % (primo_q - 1)
+def descifrar_crt(c_numeros, d, p, q):
+    dp = d % (p - 1)
+    dq = d % (q - 1)
 
-    numeros_descifrados = []
+    numeros_desc = []
 
-    for caracter_cifrado in mensaje_cifrado:
-        mp = caracter_cifrado ** dp % primo_p
-        mq = caracter_cifrado ** dq % primo_q
+    for num in c_numeros:
+        mp = fast_modular_exp(num, dp, p)
+        mq = fast_modular_exp(num, dq, q)
 
-        numero_descifrado = crt([mp, mq], [primo_p, primo_q])
-        numeros_descifrados.append(numero_descifrado)
+        num_desc = crt([mp, mq], [p, q])
+        numeros_desc.append(num_desc)
 
-    return convertir_numeros_a_mensaje(numeros_descifrados)
+    return numeros_desc
 
 
 def test():
-    p, q = 61, 53
+    p = generar_primo(1024)
+    q = generar_primo(1024)
     n = p * q
 
     mensaje_original = 'Hola'
@@ -90,6 +125,7 @@ def test():
 
     mensaje_descifrado = descifrar_crt(mensaje_cifrado, d, p, q)
     print(f'Mensaje descifrado (CRT): {mensaje_descifrado}')
+    print(convertir_numeros_a_mensaje(mensaje_descifrado))
 
 
 if __name__ == '__main__':
