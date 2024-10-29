@@ -82,10 +82,10 @@ def test_2():
     sesgos = [1, 1]
     funciones = [funcion_lineal, funcion_lineal]
 
-    salida_final = red_neuronal(entrada_inicial, pesos_por_capa, sesgos, funciones)
+    salida_final, capas = red_neuronal(entrada_inicial, pesos_por_capa, sesgos, funciones)
 
-    print(f"Pesos Capa Entrada: {pesos_capa_1}")
-    print(f"Pesos Capa Oculta: {pesos_capa_2}")
+    print(f"Entradas: {entrada_inicial}")
+    print(f"Capas: {capas}")
     print(f"Capa Salida: {salida_final}")
 
 
@@ -106,9 +106,10 @@ def test_3():
     sesgos = [0.35, 0.60]
     funciones = [funcion_logistica, funcion_logistica]
 
-    salida_final = red_neuronal(entrada_inicial, pesos_por_capa, sesgos, funciones)
+    salida_final, capas = red_neuronal(entrada_inicial, pesos_por_capa, sesgos, funciones)
+    print(f"Entradas: {entrada_inicial}")
+    print(f"Capas: {capas}")
     print(f"Capa Salida: {salida_final}")
-
     print(f"Softmax en Salida: {funcion_softmax(salida_final)}")
 
 
@@ -116,3 +117,4 @@ if __name__ == "__main__":
     test_1()
     test_2()
     test_3()
+
