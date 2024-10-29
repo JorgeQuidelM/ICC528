@@ -1,6 +1,11 @@
 import numpy as np
 
 
+def funcion_sigmoide(x):
+    fx = 1 / (1 + np.exp(-x))
+    return float(fx)
+
+
 def suma_ponderada(entradas, pesos):
     producto_punto = np.dot(entradas, pesos)
     return producto_punto.astype(float).tolist()
@@ -40,9 +45,11 @@ def perceptron(entradas, pesos, sesgo, f_activacion):
 
 
 def red_neuronal(entradas, pesos_por_capas, sesgos, funciones):
+    capas = [entradas]
     for pesos, sesgo, funcion in zip(pesos_por_capas, sesgos, funciones):
         entradas = perceptron(entradas, pesos, sesgo, funcion)
-    return entradas
+        capas.append(entradas)
+    return entradas, capas
 
 
 def test_1():
@@ -105,6 +112,7 @@ def test_3():
     print(f"Softmax en Salida: {funcion_softmax(salida_final)}")
 
 
-test_1()
-test_2()
-test_3()
+if __name__ == "__main__":
+    test_1()
+    test_2()
+    test_3()
